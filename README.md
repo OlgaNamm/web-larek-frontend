@@ -42,7 +42,10 @@ yarn build
 ```
 # Документация
 
-Выбрана модель данных в паттерне MVP (Model-View-Presenter).
+Выбрана модель данных в паттерне MVP (Model-View-Presenter).\
+Модель (Model) предоставляет данные для пользовательского интерфейса.\
+Представление (View) реализует отображение данных (Модели) и маршрутизацию пользовательских команд или событий Presenterʼу.\
+Presenter управляет Моделью и Представлением. Например извлекает данные из Модели и форматирует их для отображения в Представлении.
 
 ## Данные и типы данных в приложении
  
@@ -54,30 +57,11 @@ yarn build
 - описание товара;
 - изображение товара;
 
-```
-interface ICard {
-    id: string,
-    title: string,
-    price: number,
-    category?: string,
-    description?: string,
-    image?: string
-}
-```
 Данные покупателя (для заполнения форм попапов):
 - способ оплаты
 - адрес доставки
 - E-mail покупателя
 - номер телефона
-
-```
-interface IOrderForm {
-    payment: string,
-    address: string,
-    email: string,
-    phone: string
-}
-```
 
 Данные в попапе Карточка товара:
 - данные карточки товаров;
@@ -96,14 +80,171 @@ interface IOrderForm {
 
 ## Описание базовых классов, их предназначение и функции
 
+#### Класс API
+
+Класс для работы с API. Обеспечивает выполнение запросав GET, POST.\
+Поля:
+- readonly baseUrl: string
+- protected options: RequestInit
+
+Методы класса:
+- handleResponse - метод для обработки ответа от сервера
+- get - выполняет GET-апрос к указанному URI
+- post - выполняет POST-запрос к указанному URI
+
+#### Класс EventEmitter
+Позволяет подписываться на события, уведомлять и управлять подписками.\
+Методы класса:
+- on - установить обработчик на событие
+- off - снять обработчик с события
+- emit - инициировать событие с данными
+- onAll - слушать все события
+- offAll - сбросить все обработчики
+- trigger - сделать коллбек триггер, генерирующий событие при вызове
+
+#### Класс Modal
+Отвечает за открытие и закрытие модальных окон (попапов) приложения.\
+Поля:
+- _closeButton: HTMLButtonElement - Кнопка закрытия
+- _content: HTMLElement - Контейнер содержимого
+
+Методы:
+- set content - устанавливает содержимое попапа
+- open - открывает попап
+- close - закрывает попап
+- render - рендерит попап
+
+#### Класс Component
+Абстрактный класс компонента для работы с DOM.\
+Методы:
+- toggleClass - переключает CSS-класс у элемента
+- setText - устанавливает текстовое содержимое элемента
+- setDisabled - устанавливает/снимает атрибут disabled у элемента
+- setHidden - скрывает элемент через display: none
+- setVisible - показывает элемент, удаляя display: none
+- setImage - устанавливает изображение и альтернативный текст
+
+#### Класс Form
+Абстрактный класс для форм, родительский для класса OrderFirst и класса OrderSecond.\
+Поля:
+- _submit: HTMLButtonElement - Кнопка отправки формы
+- _errors: HTMLElement - Контейнер для ошибок
+
+Методы:
+- onInputChange - метод обработки изменения поля ввода
+- set valid - сеттер для установки валидности формы
+- set errors - сеттер для установки сообщений об ошибках
+- render - метод рендеринга формы
+
 ### Слой данных (Model)
-!!!!
+
+#### Класс CardModel
+Хранит данные товаров.\
+Поля:
+- id 
+- _cards: ICard[]
+
+Методы:
+- set cards - сохраняет список товаров
+- get cards - возвращает список товаров
+- get card - возвращает конкретный товар по id
+
+#### Класс FormModel
+Хранит данные пользователя для оформления заказа.\
+Поля:
+- contactInfo: { phone: string; email: string }
+- deliveryInfo: { address: string; payment: PaymentMethod }
+
+Методы:
+- setOrderData - устанавливает контактные данные (адрес и способ оплаты)
+- setContactData - устанавливает контактные данные (email и номер телефона)
+- getFormData - возвращает введенные контактные данные
+- validate - проверяет корректность введённых данных пользователя
+
+#### Класс CartModel
+Хранит данные корзины товаров.\
+Методы:
+- addItem - добавляет конкретный товар в корзину
+- removeItem - удаляет конкретный товар из корзины
+- clear - очищает всю корзину
+- getItems - возвращает список товаров
+- getTotalPrice - вычисляет общую стоимость товаров в корзине
 
 ### Слой представления (View)
 
+#### Класс Page
+Отображает главную страницу приложения.\
+Поля:
+- buttonCart: HTMLButtonElement - кнопка корзины
+- _counter: HTMLSpanElement - счетчик товаров в корзине
+- _catalog: HTMLElement - контейнер для товаров
 
-### Презентер (Презентер)
+Методы:
+- set counter - устанавливает значение счетчика
+- set catalog - устанавливает карточки товаров на странице
 
+#### Класс Card
+Отображает карточку с информацией о товаре.
+Поля:
+- container: HTMLElement
+- _id: HTMLSpanElement
+- _title: HTMLTitleElement
+- _price: HTMLSpanElement
+- _category: HTMLSpanElement
+- _description: HTMLParagraphElement | null
+- _image: HTMLImageElement
+
+Методы: 
+- id - устанавливает идентификатор товара
+- title - устанавливаетзаголовок товара
+- price - устанавливает цену товара
+- category - устанавливает категорию товара
+- description - устанавливает описание товара
+- image - устанавливает изображение товара
+
+#### Класс Basket
+Отображает корзину товаров со списком товаров, их колличеством и суммой заказа.\
+Поля:
+- container: HTMLElement
+- title: HTMLTimeElement
+- containerBasket: HTMLElement
+- basketList: HTMLElement
+- button: HTMLButtonElement
+- price: HTMLSpanElement
+Методы:
+- render - отображает список товаров в корзине
+- updatePrice - обновляет общую стоимость заказа
+- clear - очищает корзину товаров
+
+#### Класс OrderFirst
+Отображает форму с выбором способа оплаты, полем ввода адреса доставки.\
+Поля:
+- container: HTMLFormElement
+- buttonOnline: HTMLButtonElement
+- buttonOffline: HTMLButtonElement
+- buttonNext: HTMLButtonElement
+Методы:
+- set payment - устанавливает способ оплаты
+- set address - устанавливает адрес дооставки
+
+#### Класс OrderSecond
+Отображает форму с полями ввода данных пользователя.\
+Методы:
+- set email - устанавливает e-mail пользователя
+- set phone - устанавливает номер телефона пользователя
+
+#### Класс OrderSuccess
+Отображает попап с сообщением об успешном оформлении заказа.\
+Поля:
+- container: HTMLElement
+- title: HTMLTitleElement
+- descriptions: HTMLParagraphElement
+- button: HTMLButtonElement
+Методы:
+- set total - отображает сколько списано (стоимость заказа)
+
+### Презентер (Presenter)
+Обрабатывает события от View, взаимодействует с Model, обновляет интерфейс методами View.
 
 ## Описание компонентов, их функций и связей с другими компонентами
 

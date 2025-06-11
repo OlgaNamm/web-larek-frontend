@@ -1,1 +1,33 @@
-// Типы данных, покрывающие как минимум базовый код и модели данных, а в зависимости от выбранной архитектуры ещё и компоненты.
+type categories =
+	| 'другое'
+	| 'софт-скилс'
+	| 'дополнительное'
+	| 'кнопка'
+	| 'хард-скил';
+
+interface ICard {
+	id: string;
+	title: string;
+	price: number | null;
+	category: categories;
+	description: string;
+	image: string;
+}
+
+interface IBasket {
+	items: IBasketItem[];
+	total: number | null;
+}
+
+interface IBasketItem {
+	id: string;
+	title: string;
+	price: number | null;
+}
+
+interface IOrderForm {
+    payment: string;
+	address: string;
+	email: string;
+	phone: string;
+}
