@@ -211,6 +211,7 @@ Presenter управляет Моделью и Представлением. Н�
 - basketList: HTMLElement
 - button: HTMLButtonElement
 - price: HTMLSpanElement
+
 Методы:
 - render - отображает список товаров в корзине
 - updatePrice - обновляет общую стоимость заказа
@@ -223,6 +224,7 @@ Presenter управляет Моделью и Представлением. Н�
 - buttonOnline: HTMLButtonElement
 - buttonOffline: HTMLButtonElement
 - buttonNext: HTMLButtonElement
+
 Методы:
 - set payment - устанавливает способ оплаты
 - set address - устанавливает адрес дооставки
@@ -240,6 +242,7 @@ Presenter управляет Моделью и Представлением. Н�
 - title: HTMLTitleElement
 - descriptions: HTMLParagraphElement
 - button: HTMLButtonElement
+
 Методы:
 - set total - отображает сколько списано (стоимость заказа)
 
