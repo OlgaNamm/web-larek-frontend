@@ -14,17 +14,6 @@ interface ICard {
 	image: string;
 }
 
-interface IBasket {
-	items: IBasketItem[];
-	total: number | null;
-}
-
-interface IBasketItem {
-	id: string;
-	title: string;
-	price: number | null;
-}
-
 interface IOrderForm {
     payment: string;
 	address: string;
