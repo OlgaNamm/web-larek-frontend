@@ -1,22 +1,31 @@
-type categories =
+export type categories =
 	| 'другое'
 	| 'софт-скилс'
 	| 'дополнительное'
 	| 'кнопка'
 	| 'хард-скил';
 
-interface ICard {
+export interface ICard {
 	id: string;
 	title: string;
-	price: number | null;
+	price: number;
 	category: categories;
 	description: string;
 	image: string;
 }
 
-interface IOrderForm {
+export interface IOrderForm {
     payment: string;
 	address: string;
 	email: string;
 	phone: string;
+}
+
+export interface IForm {
+  payment: string,
+  address: string,
+  email: string,
+  phone: string,
+  total: number,
+  items: string[]
 }

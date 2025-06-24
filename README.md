@@ -6,6 +6,8 @@
 - src/ — исходные файлы проекта
 - src/components/ — папка с JS компонентами
 - src/components/base/ — папка с базовым кодом
+- src/components/model/ - папка с кодом слоя данных
+- src/components/view/ - папка с кодом слоя представления
 
 Важные файлы:
 - src/pages/index.html — HTML-файл главной страницы
@@ -132,9 +134,9 @@ interface IOrderForm {
 - _errors: HTMLElement - Контейнер для ошибок
 
 Методы:
-- onInputChange(event: Event) - метод обработки изменения поля ввода
-- set valid(isValid: boolean) - сеттер для установки валидности формы
-- set errors(messages: string[]) - сеттер для установки сообщений об ошибках
+- onInputChange() - метод обработки изменения поля ввода
+- set valid(value: boolean) - сеттер для установки валидности формы
+- set errors(value: string) - сеттер для установки сообщений об ошибках
 - render() - метод рендеринга формы
 
 ### Слой данных (Model)
@@ -147,7 +149,7 @@ interface IOrderForm {
 Методы:
 - set cards(cards: ICard[]) - сохраняет список товаров
 - get cards(): ICard[] - возвращает список товаров
-- get card(id: string): ICard - возвращает конкретный товар по id
+- getCardById(id: string): ICard - возвращает конкретный товар по id
 
 #### Класс FormModel
 Хранит данные пользователя для оформления заказа.\
