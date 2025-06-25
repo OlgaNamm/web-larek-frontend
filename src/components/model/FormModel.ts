@@ -11,7 +11,7 @@ export class FormModel {
 
 	setOrderData(data: IOrderForm) {}
     
-	getFormData(): IOrderForm {}
+	//getFormData(): IOrderForm {}
 
-	validate(): boolean {}
+	//validate(): boolean {}
 }

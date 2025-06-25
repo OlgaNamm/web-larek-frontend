@@ -18,11 +18,11 @@ export class CartModel {
 		this.cards = [];
 	}
 
-	getItems(): ICard[] {}
+	//getItems(): ICard[] {}
 
-	getTotalPrice(): number {}
+	//getTotalPrice(): number {}
 
-	hasItem(id: string): boolean {}
+	//hasItem(id: string): boolean {}
 
-	getItemCount(): number {}
+	//getItemCount(): number {}
 }

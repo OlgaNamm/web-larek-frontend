@@ -2,9 +2,12 @@ import { ICard } from "../../types"
 import { IEvents } from "../base/events";
 
 export class CardModel {
-  protected _cards: ICard[];
+  protected _cards: ICard[] = [];
+  protected events: IEvents;
  
-  constructor(protected events: IEvents){}
+  constructor(events: IEvents){
+    this.events = events;
+  }
   
   get cards(): ICard[] {
     return this._cards;
