@@ -1,6 +1,7 @@
 import { Component } from '../base/Component';
 import { ICard, categories } from '../../types';
 import { CDN_URL } from '../../utils/constants'
+import { IEvents } from '../base/events';
 
 export class Card extends Component<ICard> {
     protected _id: HTMLElement;
@@ -10,7 +11,7 @@ export class Card extends Component<ICard> {
     protected _image: HTMLImageElement;
     protected _button?: HTMLButtonElement;
 
-    constructor(protected blockName: string, container: HTMLElement) {
+    constructor(protected blockName: string, container: HTMLElement, events?: IEvents) {
         super(container);
 
         this._title = container.querySelector(`.${blockName}__title`);
@@ -18,6 +19,12 @@ export class Card extends Component<ICard> {
         this._category = container.querySelector(`.${blockName}__category`);
         this._image = container.querySelector(`.${blockName}__image`);
         this._button = container.querySelector(`.${blockName}__button`);
+
+        if (events) {
+            this._button?.addEventListener('click', () => {
+                events.emit('card:select', { id: this.container.dataset.id });
+            });
+        }
     }
 
     set id(value: string) {
@@ -42,9 +49,12 @@ export class Card extends Component<ICard> {
     }
 
     set image(value: string) {
-        const pngPath = value.replace('.svg', '.png');
-        this.setImage(this._image, `${CDN_URL}${pngPath}`, this._title.textContent);
-    }
+    // проверка пути
+    const imagePath = value.startsWith('/') ? value : `/${value}`;
+    const fullPath = `${CDN_URL}${imagePath}`;
+    console.log('Загрузка изображения:', fullPath); // отладка
+    this.setImage(this._image, fullPath, this._title.textContent);
+}
 
     set button(value: string) {
         if (this._button) {

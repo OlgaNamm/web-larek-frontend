@@ -170,13 +170,12 @@ interface IOrderForm {
 - cards: ICard[] - массив товаров в корзине
 
 Методы:
-- addItem(card: ICard): void - добавляет конкретный товар в корзину (в массив cards)
+- addItem(item: ICard): void - добавляет конкретный товар в корзину (в массив cards)
 - removeItem(id: string): void - удаляет конкретный товар из корзины
 - clear(): void - очищает всю корзину (пустой массив)
 - getItems(): ICard[] - возвращает массив товаров (карточек) в корзине
-- getTotalPrice(): number - вычисляет общую стоимость товаров в корзине
+- getTotal(): number - вычисляет общую стоимость товаров в корзине
 - hasItem(id: string): boolean - проверяет, есть ли товар с данным id
-- getItemCount(): number - возвращает общее количество товаров в корзине (длина массива)
 
 ### Слой представления (View)
 
@@ -212,7 +211,7 @@ interface IOrderForm {
 #### Класс Basket
 Отображает корзину товаров со списком товаров, их колличеством и суммой заказа.\
 Поля:
-- basketList: HTMLElement - список товаров в корзине
+- itemsList: HTMLElement[] - список товаров в корзине
 - button: HTMLButtonElement - кнопка оформления заказа
 - price: HTMLSpanElement - стоимость заказа
 

@@ -2,27 +2,36 @@ import { ICard } from '../../types';
 import { IEvents } from '../base/events';
 
 export class CartModel {
-	protected cards: ICard[] = [];
+    protected items: ICard[] = [];
 
-	constructor(protected events: IEvents) {}
+    constructor(protected events: IEvents) {}
 
-	addItems(card: ICard) {
-		this.cards.push(card);
-	}
+    addItem(item: ICard): void {
+        if (!this.items.some(existing => existing.id === item.id)) {
+            this.items.push(item);
+            this.events.emit('cart:changed');
+        }
+    }
 
-	removeItem(cardId: string) {
-		this.cards = this.cards.filter((item) => item.id !== cardId);
-	}
+    removeItem(id: string): void {
+        this.items = this.items.filter(item => item.id !== id);
+        this.events.emit('cart:changed');
+    }
 
-	clear(): void {
-		this.cards = [];
-	}
+    clear(): void {
+        this.items = [];
+        this.events.emit('cart:changed');
+    }
 
-	//getItems(): ICard[] {}
+    getItems(): ICard[] {
+        return this.items;
+    }
 
-	//getTotalPrice(): number {}
+    getTotal(): number {
+        return this.items.reduce((total, item) => total + (item.price || 0), 0);
+    }
 
-	//hasItem(id: string): boolean {}
-
-	//getItemCount(): number {}
+    getItemCount(): number {
+        return this.items.length;
+    }
 }
