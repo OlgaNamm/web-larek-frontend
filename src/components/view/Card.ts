@@ -42,7 +42,8 @@ export class Card extends Component<ICard> {
     }
 
     set image(value: string) {
-        this.setImage(this._image, `${CDN_URL}${value}`, this._title.textContent);
+        const pngPath = value.replace('.svg', '.png');
+        this.setImage(this._image, `${CDN_URL}${pngPath}`, this._title.textContent);
     }
 
     set button(value: string) {
@@ -53,7 +54,7 @@ export class Card extends Component<ICard> {
 
     private getCategoryClass(category: categories): string {
         switch (category) {
-            case 'софт-скилс':
+            case 'софт-скил':
                 return 'soft';
             case 'хард-скил':
                 return 'hard';

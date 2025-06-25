@@ -7,7 +7,7 @@ import { EventEmitter } from './components/base/events';
 import { CardModel } from './components/model/CardModel';
 import { Page } from './components/view/Page';
 
-console.log('API_URL:', API_URL); // Проверка URL
+//console.log('API_URL:', API_URL); // Проверка URL
 
 const api = new Api(API_URL);
 
@@ -25,11 +25,17 @@ events.on('catalog:changed', () => {
     page.catalog = cards;
 });
 
-
 // Получение данных и обновление модели
 api.get<{ items: ICard[] }>('/product')
     .then((response) => {
         console.log('Data received:', response.items); 
+
+        // Преобразую из SVG в PNG
+        const modifiedItems = response.items.map(item => ({
+            ...item,
+            image: item.image.replace('.svg', '.png') 
+        }));
+
         cardModel.cards = response.items; 
     })
     .catch((error) => {
