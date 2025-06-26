@@ -34,4 +34,8 @@ export class CartModel {
     getItemCount(): number {
         return this.items.length;
     }
+
+    isItemInCart(id: string): boolean {
+        return this.items.some(item => item.id === id);
+    }
 }

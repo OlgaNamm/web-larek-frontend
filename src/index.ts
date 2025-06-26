@@ -19,8 +19,8 @@ const events = new EventEmitter();
 
 //подписка на все события для отладки
 events.onAll(({ eventName, data }) => {
-    console.log(eventName, data);
-})
+	console.log(eventName, data);
+});
 
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
@@ -61,10 +61,30 @@ api
 		console.error('Ошибка загрузки:', error);
 	});
 
-// Обработчики событий
+// открытия карточки в модальном окне
+events.on('card:open', (data: { id: string }) => {
+	const item = cardModel.getCardById(data.id);
+	if (!item) return;
+
+	const preview = new Card('card', cloneTemplate('#card-preview'), events);
+	preview.id = item.id;
+	preview.title = item.title;
+	preview.price = item.price;
+	preview.category = item.category;
+	preview.image = item.image;
+	preview.button = 'В корзину';
+
+	modal.render({
+		content: preview.render(),
+	});
+});
+
 events.on('card:select', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
-	if (item) cartModel.addItem(item);
+	if (item) {
+        cartModel.addItem(item);
+        modal.close();
+    }
 });
 
 events.on('basket:open', () => {
@@ -78,33 +98,34 @@ events.on('basket:open', () => {
 });
 
 events.on('cart:changed', () => {
-	try {
-		page.counter = cartModel.getItemCount();
-
-		const items = cartModel.getItems().map((item, index) => {
-			const card = new Card('card', cloneTemplate('#card-basket'));
-
-			card.title = item.title;
-			card.price = item.price;
-
-			const cardContainer = card.render();
-			const indexElement = cardContainer.querySelector('.basket__item-index');
-			if (indexElement) indexElement.textContent = (index + 1).toString();
-
-			const button = cardContainer.querySelector('.basket__item-delete');
-			if (button) {
-				button.addEventListener('click', () => {
-					cartModel.removeItem(item.id);
-				});
-			}
-
-			return cardContainer;
-		});
-
-		basket.items = items;
-		basket.total = cartModel.getTotal();
-		basket.selected = cartModel.getItems().map((item) => item.id);
-	} catch (error) {
-		console.error('Cart error:', error);
-	}
+	// Обновляем счетчик в шапке
+    page.counter = cartModel.getItemCount();
+    
+    // Создаем элементы корзины
+    const basketItems = cartModel.getItems().map((item, index) => {
+        const card = new Card('card', cloneTemplate('#card-basket'));
+        card.title = item.title;
+        card.price = item.price;
+        
+        const cardElement = card.render();
+        
+        // Устанавливаем номер позиции
+        const indexElement = cardElement.querySelector('.basket__item-index');
+        if (indexElement) indexElement.textContent = (index + 1).toString();
+        
+        // Вешаем обработчик удаления напрямую
+        const deleteButton = cardElement.querySelector('.basket__item-delete');
+        if (deleteButton) {
+            deleteButton.addEventListener('click', () => {
+                cartModel.removeItem(item.id); // Удаляем сразу через модель
+            });
+        }
+        
+        return cardElement;
+    });
+    
+    // Обновляем корзину
+    basket.items = basketItems;
+    basket.total = cartModel.getTotal();
+    basket.selected = cartModel.getItems().map(item => item.id);
 });

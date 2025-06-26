@@ -1,79 +1,90 @@
 import { Component } from '../base/Component';
 import { ICard, categories } from '../../types';
-import { CDN_URL } from '../../utils/constants'
+import { CDN_URL } from '../../utils/constants';
 import { IEvents } from '../base/events';
 
 export class Card extends Component<ICard> {
-    protected _id: HTMLElement;
-    protected _title: HTMLElement;
-    protected _price: HTMLElement;
-    protected _category: HTMLElement;
-    protected _image: HTMLImageElement;
-    protected _button?: HTMLButtonElement;
+	protected _id: HTMLElement;
+	protected _title: HTMLElement;
+	protected _price: HTMLElement;
+	protected _category: HTMLElement;
+	protected _image: HTMLImageElement;
+	protected _button?: HTMLButtonElement;
 
-    constructor(protected blockName: string, container: HTMLElement, events?: IEvents) {
-        super(container);
+	constructor(
+		protected blockName: string,
+		container: HTMLElement,
+		events?: IEvents
+	) {
+		super(container);
 
-        this._title = container.querySelector(`.${blockName}__title`);
-        this._price = container.querySelector(`.${blockName}__price`);
-        this._category = container.querySelector(`.${blockName}__category`);
-        this._image = container.querySelector(`.${blockName}__image`);
-        this._button = container.querySelector(`.${blockName}__button`);
+		this._title = container.querySelector(`.${blockName}__title`);
+		this._price = container.querySelector(`.${blockName}__price`);
+		this._category = container.querySelector(`.${blockName}__category`);
+		this._image = container.querySelector(`.${blockName}__image`);
+		this._button = container.querySelector(`.${blockName}__button`);
 
-        if (events) {
-            this._button?.addEventListener('click', () => {
-                events.emit('card:select', { id: this.container.dataset.id });
-            });
-        }
-    }
+		if (events) {
+			this.container.addEventListener('click', (e) => {
+				events.emit('card:open', { id: this.container.dataset.id });
+			});
 
-    set id(value: string) {
-        this.container.dataset.id = value;
-    }
+			// Клик по кнопке добавляет в корзину
+			this._button?.addEventListener('click', () => {
+				events.emit('card:select', { id: this.container.dataset.id });
+			});
+		}
+	}
 
-    set title(value: string) {
-        this.setText(this._title, value);
-    }
+	set id(value: string) {
+		this.container.dataset.id = value;
+	}
 
-    set price(value: number | null) {
-        if (value === null) {
-            this.setText(this._price, 'Бесценно');
-        } else {
-            this.setText(this._price, `${value} синапсов`);
-        }
-    }
+	set title(value: string) {
+		this.setText(this._title, value);
+	}
 
-    set category(value: categories) {
-        this.setText(this._category, value);
-        this._category.className = `${this.blockName}__category ${this.blockName}__category_${this.getCategoryClass(value)}`;
-    }
+	set price(value: number | null) {
+		if (value === null) {
+			this.setText(this._price, 'Бесценно');
+		} else {
+			this.setText(this._price, `${value} синапсов`);
+		}
+	}
 
-    set image(value: string) {
-    // проверка пути
-    const imagePath = value.startsWith('/') ? value : `/${value}`;
-    const fullPath = `${CDN_URL}${imagePath}`;
-    //console.log('Загрузка изображения:', fullPath); // отладка
-    this.setImage(this._image, fullPath, this._title.textContent);
-}
+	set category(value: categories) {
+		this.setText(this._category, value);
+		this._category.className = `${this.blockName}__category ${
+			this.blockName
+		}__category_${this.getCategoryClass(value)}`;
+	}
 
-    set button(value: string) {
-        if (this._button) {
-            this.setText(this._button, value);
-        }
-    }
+	set image(value: string) {
+		// проверка пути
+		const imagePath = value.startsWith('/') ? value : `/${value}`;
+		const fullPath = `${CDN_URL}${imagePath}`;
+		//console.log('Загрузка изображения:', fullPath); // отладка
+		this.setImage(this._image, fullPath, this._title.textContent);
+	}
 
-    private getCategoryClass(category: categories): string {
-        switch (category) {
-            case 'софт-скил':
-                return 'soft';
-            case 'хард-скил':
-                return 'hard';
-            case 'дополнительное':
-                return 'additional';
-            case 'кнопка':
-                return 'button';
-            default:
-                return 'other';
-        }
-    }
+	set button(value: string) {
+		if (this._button) {
+			this.setText(this._button, value);
+		}
+	}
+
+	private getCategoryClass(category: categories): string {
+		switch (category) {
+			case 'софт-скил':
+				return 'soft';
+			case 'хард-скил':
+				return 'hard';
+			case 'дополнительное':
+				return 'additional';
+			case 'кнопка':
+				return 'button';
+			default:
+				return 'other';
+		}
+	}
 }
