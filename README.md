@@ -222,9 +222,10 @@ interface IOrderForm {
 #### Класс OrderFirst
 Отображает форму с выбором способа оплаты, полем ввода адреса доставки.\
 Поля:
-- buttonOnline: HTMLButtonElement - кнопка для онлайн оплаты
-- buttonOffline: HTMLButtonElement - кнопка для оплаты при получении
-- buttonNext: HTMLButtonElement - кнопка "Далее"
+- onlineButton: HTMLButtonElement - кнопка для онлайн оплаты
+- offlineButton: HTMLButtonElement - кнопка для оплаты при получении
+- submitButton: HTMLButtonElement - кнопка "Далее"
+- addressInput: HTMLInputElement
 
 Методы:
 - set payment - устанавливает способ оплаты

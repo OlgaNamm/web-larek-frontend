@@ -2,7 +2,7 @@ import './scss/styles.scss';
 
 import { Api } from './components/base/api';
 import { API_URL, CDN_URL } from './utils/constants';
-import { ICard } from './types';
+import { ICard, IOrderForm } from './types';
 import { Card } from './components/view/Card';
 import { CardModel } from './components/model/CardModel';
 import { EventEmitter } from './components/base/events';
@@ -11,6 +11,9 @@ import { Page } from './components/view/Page';
 import { Modal } from './components/base/Modal';
 import { Basket } from './components/view/Basket';
 import { cloneTemplate, ensureElement } from './utils/utils';
+import { FormModel } from './components/model/FormModel';
+import { OrderFirst } from './components/view/OrderFirst';
+import { OrderSecond } from './components/view/OrderSecond';
 
 //console.log('API_URL:', API_URL); // Проверка URL
 
@@ -22,7 +25,7 @@ const cartModel = new CartModel(events);
 
 const page = new Page(document.body, events);
 const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
-const basket = new Basket(cloneTemplate<HTMLElement>('#basket'), events);
+
 
 //подписка на все события для отладки
 events.onAll(({ eventName, data }) => {
@@ -94,6 +97,60 @@ events.on('card:select', (data: { id: string }) => {
 	}
 });
 
+// Обработчик ошибок формы
+events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
+    if (formModel._currentStep === 'order') {
+        const errorMessages = Object.values({
+            payment: errors.payment,
+            address: errors.address
+        }).filter(Boolean).join(', ');
+        
+        orderFirst.errors = errorMessages;
+        orderFirst.valid = !errorMessages;
+    }
+});
+
+// Обработчик открытия формы заказа
+// Обработчик открытия формы заказа
+events.on('order:open', () => {
+    formModel.setStep('order');
+    formModel.reset();
+    
+    modal.render({
+        content: orderFirst.render({
+            payment: '',
+            address: ''
+        })
+    });
+    
+    // Триггерим начальную валидацию
+    events.emit('order.payment:change', { payment: '' });
+    events.emit('order.address:change', { address: '' });
+});
+
+// Обработчики изменений полей
+events.on('order.payment:change', (data: { payment: string }) => {
+    formModel.setOrderData({ payment: data.payment });
+});
+
+events.on('order.address:change', (data: { address: string }) => {
+    formModel.setOrderData({ address: data.address });
+});
+
+// Обработчик открытия второго шага
+events.on('contacts:open', () => {
+    formModel.setStep('contacts');
+    modal.render({
+        content: orderSecond.render({
+            email: formModel.getFormData().email,
+            phone: formModel.getFormData().phone
+        })
+    });
+});
+
+
+const basket = new Basket(cloneTemplate<HTMLElement>('#basket'), events);
+
 // Открывает модальное окно корзины
 events.on('basket:open', () => {
 	modal.render({
@@ -154,4 +211,37 @@ events.on('cart:changed', () => {
 			card.setDisabled(button, cartModel.isItemInCart(cardId));
 		}
 	}
+});
+
+
+const formModel = new FormModel(events);
+const orderFirst = new OrderFirst(cloneTemplate<HTMLElement>('#order'), events);
+const orderSecond = new OrderSecond(cloneTemplate<HTMLElement>('#contacts'), events);
+
+
+// Обработчик валидации формы
+events.on('order:validation', (data: { valid: boolean, errors: string }) => {
+    console.log('Validation:', { 
+        step: formModel._currentStep, 
+        valid: data.valid,
+        errors: data.errors 
+    });
+    
+    if (formModel._currentStep === 'order') {
+        orderFirst.errors = data.errors;
+        orderFirst.valid = data.valid;
+    } else {
+        orderSecond.errors = data.errors;
+        orderSecond.valid = data.valid;
+    }
+});
+
+
+// Обработчик отправки формы 
+events.on('order:submit', () => {
+    if (formModel.valid) {
+        events.emit('contacts:open');
+    } else {
+        console.warn('Форма не валидна!');
+    }
 });
