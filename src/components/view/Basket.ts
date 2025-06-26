@@ -16,25 +16,24 @@ export class Basket extends Component<IBasketView> {
     constructor(container: HTMLElement, protected events: EventEmitter) {
         super(container);
 
-        this._list = ensureElement<HTMLElement>('.basket__list', container);
-        this._total = ensureElement<HTMLElement>('.basket__price', container);
-        this._button = ensureElement<HTMLButtonElement>('.basket__button', container);
-
+        this._list = ensureElement<HTMLElement>('.basket__list', this.container);
+        this._total = this.container.querySelector('.basket__price');
+        this._button = this.container.querySelector('.basket__button');
+        //если кнопка есть - обработчик клика
         if (this._button) {
             this._button.addEventListener('click', () => {
-                events.emit('order:open');
+                events.emit('order:open'); // при клике событие открытия
             });
         }
-    }
 
+        // Инициализируем массив товаров пустым массивом
+        this.items = [];
+    }
+    // устанавливаем список товаров
     set items(items: HTMLElement[]) {
         this._list.replaceChildren(...items);
     }
-
-    set total(total: number) {
-        this.setText(this._total, `${total} синапсов`);
-    }
-
+    // установка выбранных товаров
     set selected(items: string[]) {
         if (items.length) {
             this.setDisabled(this._button, false);
@@ -42,4 +41,10 @@ export class Basket extends Component<IBasketView> {
             this.setDisabled(this._button, true);
         }
     }
+    // установка стоимости заказа
+    set total(total: number) {
+        this.setText(this._total, `${total} синапсов`);
+    }
+
+    
 }

@@ -52,7 +52,7 @@ export class Card extends Component<ICard> {
     // проверка пути
     const imagePath = value.startsWith('/') ? value : `/${value}`;
     const fullPath = `${CDN_URL}${imagePath}`;
-    console.log('Загрузка изображения:', fullPath); // отладка
+    //console.log('Загрузка изображения:', fullPath); // отладка
     this.setImage(this._image, fullPath, this._title.textContent);
 }
 
