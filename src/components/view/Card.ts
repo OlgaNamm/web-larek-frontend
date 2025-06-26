@@ -45,12 +45,20 @@ export class Card extends Component<ICard> {
 	}
 
 	set price(value: number | null) {
-		if (value === null) {
-			this.setText(this._price, 'Бесценно');
-		} else {
-			this.setText(this._price, `${value} синапсов`);
-		}
-	}
+        if (value === null) {
+            this.setText(this._price, 'Бесценно');
+            if (this._button) {
+                this.setDisabled(this._button, true);
+                this.setText(this._button, 'Недоступно');
+            }
+        } else {
+            this.setText(this._price, `${value} синапсов`);
+            if (this._button) {
+                this.setDisabled(this._button, false);
+                this.setText(this._button, 'В корзину');
+            }
+        }
+    }
 
 	set category(value: categories) {
 		this.setText(this._category, value);
@@ -63,7 +71,6 @@ export class Card extends Component<ICard> {
 		// проверка пути
 		const imagePath = value.startsWith('/') ? value : `/${value}`;
 		const fullPath = `${CDN_URL}${imagePath}`;
-		//console.log('Загрузка изображения:', fullPath); // отладка
 		this.setImage(this._image, fullPath, this._title.textContent);
 	}
 

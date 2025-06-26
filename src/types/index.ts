@@ -21,4 +21,6 @@ export interface IOrderForm {
 	address: string;
 	email: string;
 	phone: string;
+	total?: number;
+    items?: string[];
 }
