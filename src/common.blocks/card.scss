@@ -39,6 +39,7 @@
     @include mixins.flex(row);
     align-items: center;
     gap: $defaultPadding;
+    padding-top: 153px;
   }
 
   &__image {
@@ -56,6 +57,7 @@
   &__text {
     text-align: left;
     flex-grow: 1;
+    font-size: 30px;
   }
   &__category {
     padding: 0.5rem 1.25rem;
