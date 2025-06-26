@@ -111,7 +111,6 @@ events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
 });
 
 // Обработчик открытия формы заказа
-// Обработчик открытия формы заказа
 events.on('order:open', () => {
     formModel.setStep('order');
     formModel.reset();
@@ -122,10 +121,7 @@ events.on('order:open', () => {
             address: ''
         })
     });
-    
-    // Триггерим начальную валидацию
-    events.emit('order.payment:change', { payment: '' });
-    events.emit('order.address:change', { address: '' });
+
 });
 
 // Обработчики изменений полей
@@ -140,10 +136,13 @@ events.on('order.address:change', (data: { address: string }) => {
 // Обработчик открытия второго шага
 events.on('contacts:open', () => {
     formModel.setStep('contacts');
+
+	// Очищаем предыдущие ошибки
+    orderSecond.errors = '';
     modal.render({
         content: orderSecond.render({
-            email: formModel.getFormData().email,
-            phone: formModel.getFormData().phone
+            email: '',
+            phone: ''
         })
     });
 });

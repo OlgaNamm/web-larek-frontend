@@ -16,6 +16,7 @@ export class OrderSecond extends Component<IOrderForm> {
         this._phoneInput = ensureElement<HTMLInputElement>('input[name="phone"]', container);
         this._submitButton = ensureElement<HTMLButtonElement>('button[type="submit"]', container);
         this._errors = ensureElement<HTMLElement>('.form__errors', container);
+        this._errors.textContent = ''; // Очищаем ошибки при инициализации
 
         // Обработчики изменения полей
         this._emailInput.addEventListener('input', () => {
@@ -49,11 +50,29 @@ export class OrderSecond extends Component<IOrderForm> {
     }
 
     set errors(value: string) {
-        this.setText(this._errors, value);
+        // Показываем ошибки только если поле было изменено
+        if (this._errors && (value || this._emailInput.value || this._phoneInput.value)) {
+            this._errors.textContent = value;
+        } else {
+            this._errors.textContent = '';
+        }
     }
 
     render(data: Partial<IOrderForm>): HTMLElement {
-        super.render(data);
-        return this.container;
+    super.render(data);
+    
+    // Сбрасываем состояние при рендере
+    this.valid = false;
+    this.errors = '';
+    
+    if (data.email) {
+        this.email = data.email;
     }
+    
+    if (data.phone) {
+        this.phone = data.phone;
+    }
+    
+    return this.container;
+}
 }

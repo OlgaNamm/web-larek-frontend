@@ -95,6 +95,10 @@ export class OrderFirst extends Component<IOrderForm> {
 	render(data: Partial<IOrderForm>): HTMLElement {
 		super.render(data);
 
+		// Сбрасываем состояние при рендере
+		this.valid = false;
+		this.errors = '';
+
 		// Устанавливаем начальные значения
 		if (data.payment === 'online') {
 			this.toggleClass(this._onlineButton, 'button_alt-active', true);
@@ -102,10 +106,16 @@ export class OrderFirst extends Component<IOrderForm> {
 		} else if (data.payment === 'offline') {
 			this.toggleClass(this._onlineButton, 'button_alt-active', false);
 			this.toggleClass(this._offlineButton, 'button_alt-active', true);
+		} else {
+			// Сбрасываем выбор способа оплаты
+			this.toggleClass(this._onlineButton, 'button_alt-active', false);
+			this.toggleClass(this._offlineButton, 'button_alt-active', false);
 		}
 
 		if (data.address) {
 			this.address = data.address;
+		} else {
+			this.address = '';
 		}
 
 		return this.container;
