@@ -30,7 +30,7 @@ const cartModel = new CartModel(events);
 
 const basket = new Basket(cloneTemplate<HTMLElement>('#basket'), events);
 
-// Подписка на событие обновления каталога
+// Обновляет список карточек на главной странице при изменении данных
 events.on('catalog:changed', () => {
 	if (!Array.isArray(cardModel.cards)) {
 		console.error('cardModel.cards не массив:', cardModel.cards);
@@ -61,7 +61,7 @@ api
 		console.error('Ошибка загрузки:', error);
 	});
 
-// открытия карточки в модальном окне
+// Открывает карточку товара в модальном окне
 events.on('card:open', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
 	if (!item) return;
@@ -79,6 +79,7 @@ events.on('card:open', (data: { id: string }) => {
 	});
 });
 
+// Добавляет товар в корзину и закрывает модальное окно
 events.on('card:select', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
 	if (item) {
@@ -87,16 +88,20 @@ events.on('card:select', (data: { id: string }) => {
     }
 });
 
+// Открывает модальное окно корзины
 events.on('basket:open', () => {
 	modal.render({
 		content: basket.render({
-			items: [],
+			items: [], // пустой массив должен обновиться через cart:changed
 			total: cartModel.getTotal(),
 			selected: cartModel.getItems().map((item) => item.id),
 		}),
 	});
+	// Принудительно триггерим обновление корзины
+    events.emit('cart:changed');
 });
 
+// Обновляет счетчик, список товаров и сумму в корзине
 events.on('cart:changed', () => {
 	// Обновляем счетчик в шапке
     page.counter = cartModel.getItemCount();
@@ -111,7 +116,9 @@ events.on('cart:changed', () => {
         
         // Устанавливаем номер позиции
         const indexElement = cardElement.querySelector('.basket__item-index');
-        if (indexElement) indexElement.textContent = (index + 1).toString();
+        if (indexElement) {
+            indexElement.textContent = (index + 1).toString();
+        }
         
         // Вешаем обработчик удаления напрямую
         const deleteButton = cardElement.querySelector('.basket__item-delete');
@@ -129,3 +136,4 @@ events.on('cart:changed', () => {
     basket.total = cartModel.getTotal();
     basket.selected = cartModel.getItems().map(item => item.id);
 });
+
