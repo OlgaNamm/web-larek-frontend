@@ -73,15 +73,24 @@ events.on('card:open', (data: { id: string }) => {
 	preview.price = item.price;
 	preview.category = item.category;
 	preview.image = item.image;
-	//preview.button = 'В корзину';
 
 	const cardElement = preview.render();
-	const button = cardElement.querySelector('.card__button');
-
-	// Блокируем кнопку, если товар уже в корзине
-	if (button) {
-		preview.setDisabled(button as HTMLElement, cartModel.isItemInCart(item.id));
-	}
+	
+	 const button = cardElement.querySelector<HTMLButtonElement>('.card__button');
+    if (button) {
+        preview.setDisabled(button, item.price === null || cartModel.isItemInCart(item.id));
+        
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (item.price !== null) {
+                cartModel.addItem(item);
+                modal.close();
+                preview.setDisabled(button, true); // Блокируем после добавления
+            }
+        });
+    }
 
 	modal.render({
 		content: cardElement,
@@ -203,13 +212,14 @@ events.on('cart:changed', () => {
     basket.selected = cartModel.getItems().map(item => item.id);
 
     // Обновление кнопки в модальном окне карточки
-    const modalContainer = document.querySelector('#modal-container .card');
-    if (modalContainer instanceof HTMLElement) {
-        const cardId = modalContainer.dataset.id;
-        const button = modalContainer.querySelector<HTMLButtonElement>('.card__button');
+   const modalCard = document.querySelector<HTMLElement>('#modal-container .card');
+    if (modalCard) {
+        const cardId = modalCard.dataset.id;
+        const button = modalCard.querySelector<HTMLButtonElement>('.card__button');
+        const cardComponent = new Card('card', modalCard, events);
+        
         if (button && cardId) {
-            const card = new Card('card', modalContainer, events);
-            card.setDisabled(button, cartModel.isItemInCart(cardId));
+            cardComponent.setDisabled(button, cartModel.isItemInCart(cardId));
         }
     }
 });

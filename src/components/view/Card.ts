@@ -52,22 +52,19 @@ export class Card extends Component<ICard> {
 	}
 
 	set price(value: number | null) {
-        if (value === null) {
-            this.setText(this._price, 'Бесценно');
-            if (this._button) {
-                this._button.disabled = true;
-                this._button.textContent = 'Недоступно';
-                this._button.classList.add('card__button_disabled');
-            }
-            return;
-        } else {
-            this.setText(this._price, `${value} синапсов`);
-            if (this._button) {
-                this.setDisabled(this._button, false);
-                this.setText(this._button, 'В корзину');
-            }
+    if (value === null) {
+        this.setText(this._price, 'Бесценно');
+        if (this._button) {
+            this._button.disabled = true; // Блокируем кнопку для бесценных товаров
         }
+        return;
     }
+    
+    this.setText(this._price, `${value} синапсов`);
+    if (this._button) {
+        this._button.disabled = false; // Разблокируем для товаров с ценой
+    }
+}
 
 	set category(value: categories) {
 		this.setText(this._category, value);
