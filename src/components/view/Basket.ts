@@ -20,6 +20,15 @@ export class Basket extends Component<IBasketView> {
 		this._total = this.container.querySelector('.basket__price');
 		this._button = this.container.querySelector('.basket__button');
 
+		this._list.addEventListener('click', (e) => {
+			const deleteButton = (e.target as HTMLElement).closest(
+				'.basket__item-delete'
+			);
+			if (deleteButton) {
+				e.stopPropagation();
+			}
+		});
+
 		//если кнопка есть - обработчик клика
 		if (this._button) {
 			this._button.addEventListener('click', () => {

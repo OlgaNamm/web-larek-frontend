@@ -73,7 +73,7 @@ events.on('card:open', (data: { id: string }) => {
 	preview.price = item.price;
 	preview.category = item.category;
 	preview.image = item.image;
-	preview.button = 'В корзину';
+	//preview.button = 'В корзину';
 
 	const cardElement = preview.render();
 	const button = cardElement.querySelector('.card__button');
@@ -93,7 +93,7 @@ events.on('card:select', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
 	if (item && item.price !== null) {
 		cartModel.addItem(item);
-		modal.close();
+		modal.close(); // НЕ РАБОТАЕТ
 	}
 });
 
@@ -165,51 +165,53 @@ events.on('basket:open', () => {
 
 // Обновляет счетчик, список товаров и сумму в корзине
 events.on('cart:changed', () => {
-	// Обновляем счетчик в шапке
-	page.counter = cartModel.getItemCount();
+    page.counter = cartModel.getItemCount();
 
-	// Обновляем содержимое корзины
-	const basketItems = cartModel.getItems().map((item, index) => {
-		const basketCard = new Card('card', cloneTemplate('#card-basket'));
-		basketCard.title = item.title;
-		basketCard.price = item.price;
+    const basketItems = cartModel.getItems().map((item, index) => {
+        const template = cloneTemplate('#card-basket');
+        const basketCard = new Card('card', template);
+        basketCard.title = item.title;
+        basketCard.price = item.price;
 
-		const cardElement = basketCard.render();
+        const cardElement = basketCard.render();
 
-		// Устанавливаем номер позиции
-		const indexElement = cardElement.querySelector('.basket__item-index');
-		if (indexElement) {
-			indexElement.textContent = (index + 1).toString();
-		}
+        // Устанавливаем номер позиции
+        const indexElement = cardElement.querySelector('.basket__item-index');
+        if (indexElement) {
+            indexElement.textContent = (index + 1).toString();
+        }
 
-		// Вешаем обработчик удаления напрямую
-		const deleteButton = cardElement.querySelector('.basket__item-delete');
-		if (deleteButton) {
-			deleteButton.addEventListener('click', () => {
-				cartModel.removeItem(item.id); // Удаляем сразу через модель
-			});
-		}
+        // Обработчик удаления
+        const deleteButton = cardElement.querySelector('.basket__item-delete');
+        if (deleteButton) {
+            // Полностью заменяем кнопку для сброса всех обработчиков
+            const newDeleteButton = deleteButton.cloneNode(true) as HTMLButtonElement;
+            deleteButton.replaceWith(newDeleteButton);
+            
+            newDeleteButton.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                cartModel.removeItem(item.id);
+            });
+        }
 
-		return cardElement;
-	});
+        return cardElement;
+    });
 
-	// Обновляем корзину
-	basket.items = basketItems;
-	basket.total = cartModel.getTotal();
-	basket.selected = cartModel.getItems().map((item) => item.id);
+    basket.items = basketItems;
+    basket.total = cartModel.getTotal();
+    basket.selected = cartModel.getItems().map(item => item.id);
 
-	//Обновляем кнопку в модальном окне карточки (если оно открыто)
-	const modalContainer = document.querySelector('#modal-container .card');
-	if (modalContainer instanceof HTMLElement) {
-		const cardId = modalContainer.dataset.id;
-		const button =
-			modalContainer.querySelector<HTMLButtonElement>('.card__button');
-
-		if (button && cardId) {
-			const card = new Card('card', modalContainer, events);
-			card.setDisabled(button, cartModel.isItemInCart(cardId));
-		}
-	}
+    // Обновление кнопки в модальном окне карточки
+    const modalContainer = document.querySelector('#modal-container .card');
+    if (modalContainer instanceof HTMLElement) {
+        const cardId = modalContainer.dataset.id;
+        const button = modalContainer.querySelector<HTMLButtonElement>('.card__button');
+        if (button && cardId) {
+            const card = new Card('card', modalContainer, events);
+            card.setDisabled(button, cartModel.isItemInCart(cardId));
+        }
+    }
 });
 
 const formModel = new FormModel(events);
@@ -254,30 +256,31 @@ const success = new Success(successTemplate, {
 
 // Обработчик отправки формы контактов
 events.on('contacts:submit', () => {
-    if (formModel.valid) {
-        const orderData = {
-            ...formModel.getFormData(),
-            total: cartModel.getTotal(), // Вычисляем сумму через getTotal()
-            items: cartModel.getItems().map(item => item.id)
-        };
+	if (formModel.valid) {
+		const orderData = {
+			...formModel.getFormData(),
+			total: cartModel.getTotal(), // Вычисляем сумму через getTotal()
+			items: cartModel.getItems().map((item) => item.id),
+		};
 
-        console.log('Отправка заказа:', orderData); // Для отладки
+		console.log('Отправка заказа:', orderData); // Для отладки
 
-        api.post('/order', orderData)
-            .then(() => {
-                // Показываем попап успешного оформления
-                success.total = cartModel.getTotal();
-                modal.render({
-                    content: success.render({})
-                });
-                
-                // Очищаем корзину
-                cartModel.clear();
-            })
-            .catch(err => {
-                console.error('Ошибка оформления заказа:', err);
-            });
-    }
+		api
+			.post('/order', orderData)
+			.then(() => {
+				// Показываем попап успешного оформления
+				success.total = cartModel.getTotal();
+				modal.render({
+					content: success.render({}),
+				});
+
+				// Очищаем корзину
+				cartModel.clear();
+			})
+			.catch((err) => {
+				console.error('Ошибка оформления заказа:', err);
+			});
+	}
 });
 
 // Обработчик очистки корзины

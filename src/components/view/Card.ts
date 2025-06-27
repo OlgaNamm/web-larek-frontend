@@ -9,7 +9,7 @@ export class Card extends Component<ICard> {
 	protected _price: HTMLElement;
 	protected _category: HTMLElement;
 	protected _image: HTMLImageElement;
-	protected _button?: HTMLButtonElement;
+	protected _button: HTMLButtonElement | null;
 
 	constructor(
 		protected blockName: string,
@@ -18,21 +18,28 @@ export class Card extends Component<ICard> {
 	) {
 		super(container);
 
+		const isBasketItem =
+			container.classList.contains('card_compact') ||
+			container.closest('.basket__list');
+
 		this._title = container.querySelector(`.${blockName}__title`);
 		this._price = container.querySelector(`.${blockName}__price`);
 		this._category = container.querySelector(`.${blockName}__category`);
 		this._image = container.querySelector(`.${blockName}__image`);
-		this._button = container.querySelector(`.${blockName}__button`);
+		this._button = isBasketItem
+			? null
+			: container.querySelector(`.${blockName}__button`);
 
-		if (events) {
+		if (events && !isBasketItem) {
 			this.container.addEventListener('click', (e) => {
 				events.emit('card:open', { id: this.container.dataset.id });
 			});
 
-			// Клик по кнопке добавляет в корзину
-			this._button?.addEventListener('click', () => {
-				events.emit('card:select', { id: this.container.dataset.id });
-			});
+			if (this._button) {
+				this._button.addEventListener('click', () => {
+					events.emit('card:select', { id: this.container.dataset.id });
+				});
+			}
 		}
 	}
 
@@ -48,9 +55,11 @@ export class Card extends Component<ICard> {
         if (value === null) {
             this.setText(this._price, 'Бесценно');
             if (this._button) {
-                this.setDisabled(this._button, true);
-                this.setText(this._button, 'Недоступно');
+                this._button.disabled = true;
+                this._button.textContent = 'Недоступно';
+                this._button.classList.add('card__button_disabled');
             }
+            return;
         } else {
             this.setText(this._price, `${value} синапсов`);
             if (this._button) {
@@ -74,11 +83,14 @@ export class Card extends Component<ICard> {
 		this.setImage(this._image, fullPath, this._title.textContent);
 	}
 
-	set button(value: string) {
-		if (this._button) {
+	/*set button(value: string) {
+		if (
+			this._button &&
+			!this._button.classList.contains('basket__item-delete')
+		) {
 			this.setText(this._button, value);
 		}
-	}
+	}*/
 
 	private getCategoryClass(category: categories): string {
 		switch (category) {
