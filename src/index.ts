@@ -23,35 +23,36 @@ const events = new EventEmitter();
 
 const cardModel = new CardModel(events);
 const cartModel = new CartModel(events);
+const formModel = new FormModel(events);
+
+const modalTemplate = ensureElement<HTMLElement>('#modal-container');
+const basketTemplate = cloneTemplate<HTMLElement>('#basket');
+const orderTemplate = cloneTemplate<HTMLElement>('#order');
+const contactsTemplate = cloneTemplate<HTMLElement>('#contacts');
+const successTemplate = cloneTemplate<HTMLElement>('#success');
+
+export  const template = document.querySelector<HTMLTemplateElement>('#card-catalog');
+
 
 const page = new Page(document.body, events);
-const modal = new Modal(ensureElement<HTMLElement>('#modal-container'), events);
+const modal = new Modal(modalTemplate, events);
+const basket = new Basket(basketTemplate, events);
+const orderFirst = new OrderFirst(orderTemplate, events);
+const orderSecond = new OrderSecond(contactsTemplate, events);
+const success = new Success(successTemplate, {
+	onClick: () => modal.close(),
+});
 
 //подписка на все события для отладки
-events.onAll(({ eventName, data }) => {
-	console.log(eventName, data);
-});
+//events.onAll(({ eventName, data }) => {
+//	console.log(eventName, data);
+//});
 
-// Обновляет список карточек на главной странице при изменении данных
-events.on('catalog:changed', () => {
-	if (!Array.isArray(cardModel.cards)) {
-		console.error('cardModel.cards не массив:', cardModel.cards);
-		return;
-	}
-	const cards = cardModel.cards.map((card) => page.renderCard(card));
-	page.catalog = cards;
-});
 
 // Загрузка товаров
 api
 	.get<{ items: ICard[] }>('/product')
 	.then((response) => {
-		console.log('Получены данные:', {
-			count: response.items.length,
-			firstItem: response.items[0],
-			imagePath: response.items[0]?.image,
-		});
-
 		// Преобразую из SVG в PNG
 		const modifiedItems = response.items.map((item) => ({
 			...item,
@@ -63,7 +64,12 @@ api
 		console.error('Ошибка загрузки:', error);
 	});
 
-// Открывает карточку товара в модальном окне
+// Обновляет каталог (список карточек товаров)
+events.on('catalog:changed', () => {
+	page.catalog = cardModel.cards.map((card) => page.renderCard(card));
+});
+
+// Карточка товара
 events.on('card:open', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
 	if (!item) return;
@@ -97,69 +103,7 @@ events.on('card:open', (data: { id: string }) => {
 	});
 });
 
-// Добавляет товар в корзину и закрывает модальное окно
-events.on('card:select', (data: { id: string }) => {
-	const item = cardModel.getCardById(data.id);
-	if (item && item.price !== null) {
-		cartModel.addItem(item);
-		modal.close(); // НЕ РАБОТАЕТ
-	}
-});
-
-// Обработчик ошибок формы
-events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
-	if (formModel._currentStep === 'order') {
-		const errorMessages = Object.values({
-			payment: errors.payment,
-			address: errors.address,
-		})
-			.filter(Boolean)
-			.join(', ');
-
-		orderFirst.errors = errorMessages;
-		orderFirst.valid = !errorMessages;
-	}
-});
-
-// Обработчик открытия формы заказа
-events.on('order:open', () => {
-	formModel.setStep('order');
-	formModel.reset();
-
-	modal.render({
-		content: orderFirst.render({
-			payment: '',
-			address: '',
-		}),
-	});
-});
-
-// Обработчики изменений полей
-events.on('order.payment:change', (data: { payment: string }) => {
-	formModel.setOrderData({ payment: data.payment });
-});
-
-events.on('order.address:change', (data: { address: string }) => {
-	formModel.setOrderData({ address: data.address });
-});
-
-// Обработчик открытия второго шага
-events.on('contacts:open', () => {
-	formModel.setStep('contacts');
-
-	// Очищаем предыдущие ошибки
-	orderSecond.errors = '';
-	modal.render({
-		content: orderSecond.render({
-			email: '',
-			phone: '',
-		}),
-	});
-});
-
-const basket = new Basket(cloneTemplate<HTMLElement>('#basket'), events);
-
-// Открывает модальное окно корзины
+// Корзина товаров
 events.on('basket:open', () => {
 	modal.render({
 		content: basket.render({
@@ -172,7 +116,6 @@ events.on('basket:open', () => {
 	events.emit('cart:changed');
 });
 
-// Обновляет счетчик, список товаров и сумму в корзине
 events.on('cart:changed', () => {
     page.counter = cartModel.getItemCount();
 
@@ -207,37 +150,82 @@ events.on('cart:changed', () => {
         return cardElement;
     });
 
-    basket.items = basketItems;
-    basket.total = cartModel.getTotal();
-    basket.selected = cartModel.getItems().map(item => item.id);
-
-    // Обновление кнопки в модальном окне карточки
-   const modalCard = document.querySelector<HTMLElement>('#modal-container .card');
-    if (modalCard) {
-        const cardId = modalCard.dataset.id;
-        const button = modalCard.querySelector<HTMLButtonElement>('.card__button');
-        const cardComponent = new Card('card', modalCard, events);
-        
-        if (button && cardId) {
-            cardComponent.setDisabled(button, cartModel.isItemInCart(cardId));
-        }
-    }
+  // Обновляем корзину через сеттеры
+  basket.items = basketItems;
+  basket.total = cartModel.getTotal();
+  basket.selected = cartModel.getItems().map(item => item.id);
 });
 
-const formModel = new FormModel(events);
-const orderFirst = new OrderFirst(cloneTemplate<HTMLElement>('#order'), events);
-const orderSecond = new OrderSecond(
-	cloneTemplate<HTMLElement>('#contacts'),
-	events
-);
+// Форма заказа
+events.on('order:open', () => {
+	// шаг 1
+	formModel.setStep('order');
+	formModel.reset();
 
-// Обработчик валидации формы
-events.on('order:validation', (data: { valid: boolean; errors: string }) => {
-	console.log('Validation:', {
-		step: formModel._currentStep,
-		valid: data.valid,
-		errors: data.errors,
+	modal.render({
+		content: orderFirst.render({
+			payment: '',
+			address: '',
+		}),
 	});
+});
+
+events.on('contacts:open', () => {
+	// шаг 2
+	formModel.setStep('contacts');
+
+	orderSecond.errors = '';
+	modal.render({
+		content: orderSecond.render({
+			email: '',
+			phone: '',
+		}),
+	});
+});
+
+// Обработчик отправки формы шаг 1 для шага 2
+events.on('order:submit', () => {
+	if (formModel.valid) {
+		events.emit('contacts:open');
+	}
+});
+
+// Обработчик отправки формы
+events.on('contacts:submit', () => {
+	if (formModel.valid) {
+		api
+			.post('/order', {
+				...formModel.getFormData(),
+				total: cartModel.getTotal(),
+				items: cartModel.getItems().map((item) => item.id),
+			})
+			.then(() => {
+				success.total = cartModel.getTotal();
+				modal.render({ content: success.render({}) });
+				cartModel.clear();
+			})
+			.catch((err) => {
+				console.error('Ошибка оформления заказа:', err);
+			});
+	}
+});
+
+// Обработчики изменений полей
+events.on('order.payment:change', (data: { payment: string }) => {
+	formModel.setOrderData({ payment: data.payment });
+});
+
+events.on('order.address:change', (data: { address: string }) => {
+	formModel.setOrderData({ address: data.address });
+});
+
+// Валидация формы
+events.on('order:validation', (data: { valid: boolean; errors: string }) => {
+	//console.log('Validation:', {
+	//	step: formModel._currentStep,
+	//	valid: data.valid,
+	//	errors: data.errors,
+	//});
 
 	if (formModel._currentStep === 'order') {
 		orderFirst.errors = data.errors;
@@ -248,52 +236,17 @@ events.on('order:validation', (data: { valid: boolean; errors: string }) => {
 	}
 });
 
-// Обработчик отправки формы
-events.on('order:submit', () => {
-	if (formModel.valid) {
-		events.emit('contacts:open');
-	} else {
-		console.warn('Форма не валидна!');
+events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
+	if (formModel._currentStep === 'order') {
+		const errorMessages = Object.values({
+			payment: errors.payment,
+			address: errors.address,
+		})
+			.filter(Boolean)
+			.join(', ');
+
+		orderFirst.errors = errorMessages;
+		orderFirst.valid = !errorMessages;
 	}
 });
 
-const successTemplate = cloneTemplate<HTMLElement>('#success');
-const success = new Success(successTemplate, {
-	onClick: () => {
-		modal.close();
-	},
-});
-
-// Обработчик отправки формы контактов
-events.on('contacts:submit', () => {
-	if (formModel.valid) {
-		const orderData = {
-			...formModel.getFormData(),
-			total: cartModel.getTotal(), // Вычисляем сумму через getTotal()
-			items: cartModel.getItems().map((item) => item.id),
-		};
-
-		console.log('Отправка заказа:', orderData); // Для отладки
-
-		api
-			.post('/order', orderData)
-			.then(() => {
-				// Показываем попап успешного оформления
-				success.total = cartModel.getTotal();
-				modal.render({
-					content: success.render({}),
-				});
-
-				// Очищаем корзину
-				cartModel.clear();
-			})
-			.catch((err) => {
-				console.error('Ошибка оформления заказа:', err);
-			});
-	}
-});
-
-// Обработчик очистки корзины
-events.on('cart:cleared', () => {
-	console.log('Корзина очищена');
-});

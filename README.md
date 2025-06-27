@@ -110,11 +110,12 @@ interface IOrderForm {
 Поля:
 - _closeButton: HTMLButtonElement - Кнопка закрытия
 - _content: HTMLElement - Контейнер содержимого
+- _page: HTMLElement - Обёртка главной страницы (осуществляется блокировка скролла)
 
 Методы:
 - set content(value: HTMLElement) - устанавливает содержимое попапа
-- open() - открывает попап
-- close() - закрывает попап
+- open() - открывает попап, устанавливает блок скролла
+- close() - закрывает попап, снимает блок скролла
 - render() - рендерит попап
 
 #### Класс Component
@@ -158,16 +159,24 @@ interface IOrderForm {
 - address: string - адрес доставки
 - email: string - почта покупателя
 - phone: string - номер телефона покупателя
+- _valid: boolean - для валидации
+- _currentStep: 'order' | 'contacts' = 'order' - для перехода на шаг 1 или шаг 2
+- _initialLoad: boolean - проверка на начальную загрузку полей
+- _hasPaymentInteraction: boolean - проверка не было взаимодействия и данных с оплатой
+- _hasAddressInteraction: boolean - проверка не было взаимодействия и данных с адресом
 
 Методы:
 - setOrderData(data: IOrderForm) - устанавливает контактные данные
 - getFormData(): IOrderForm - возвращает введенные контактные данные
-- validate(): boolean - проверяет корректность введённых данных пользователя
+- setStep(step: 'order' | 'contacts') - устанавливает текущий шаг для валидации
+- validate(): boolean - проверяет корректность введённых данных пользователя на двух шагах оформления заказа
+- get valid(): boolean - проверка
+- reset() - очистка данных формы
 
 #### Класс CartModel
 Хранит данные корзины товаров.\
 Поля:
-- cards: ICard[] - массив товаров в корзине
+- items: ICard[] - массив товаров в корзине
 
 Методы:
 - addItem(item: ICard): void - добавляет конкретный товар в корзину (в массив cards)
@@ -175,20 +184,23 @@ interface IOrderForm {
 - clear(): void - очищает всю корзину (пустой массив)
 - getItems(): ICard[] - возвращает массив товаров (карточек) в корзине
 - getTotal(): number - вычисляет общую стоимость товаров в корзине
-- hasItem(id: string): boolean - проверяет, есть ли товар с данным id
+- getItemCount(): number - индекс товара в списке
+- isItemInCart(id: string): boolean - проверяет, есть ли товар с данным id в корзине
 
 ### Слой представления (View)
 
 #### Класс Page
 Наследует класс Component. Отображает главную страницу приложения.\
 Поля:
-- buttonCart: HTMLButtonElement - кнопка корзины
 - _counter: HTMLSpanElement - счетчик товаров в корзине
 - _catalog: HTMLElement - контейнер для товаров
+- _wrapper: HTMLElement - обёртка страницы
+- _basket: HTMLElement - корзина на главной странице
 
 Методы:
 - set counter(value: number) - устанавливает значение счетчика
 - set catalog(items: HTMLElement[]) - устанавливает карточки товаров на странице
+- renderCard(data: ICard): HTMLElement - рендерит карточки
 
 #### Класс Card
 Отображает карточку с информацией о товаре.
@@ -197,63 +209,81 @@ interface IOrderForm {
 - _title: HTMLTitleElement - название товара
 - _price: HTMLSpanElement - стоимость товара
 - _category: HTMLSpanElement - категория товара
-- _description: HTMLParagraphElement | null - описание товара
 - _image: HTMLImageElement - изображение товара
+- _button: HTMLButtonElement | null - кнопка 
 
 Методы: 
 - set id(value: string) - устанавливает идентификатор товара
 - set title(value: string) - устанавливает заголовок товара
 - set price(value: number) - устанавливает цену товара
-- set category(value: string) - устанавливает категорию товара
-- set description(value: string) - устанавливает описание товара
+- set category(value: string) - устанавливает категорию товара класс
 - set image(value: string) - устанавливает изображение товара
+- getCategoryClass(category: categories): string - устанавливает категорию тип
 
 #### Класс Basket
 Отображает корзину товаров со списком товаров, их колличеством и суммой заказа.\
 Поля:
-- itemsList: HTMLElement[] - список товаров в корзине
-- button: HTMLButtonElement - кнопка оформления заказа
-- price: HTMLSpanElement - стоимость заказа
+- _list: HTMLElement - список товаров в корзине
+- _total: HTMLElement - стоимость заказа
+- _button: HTMLButtonElement - кнопка "Оформить"
 
 Методы:
-- render() - отображает список товаров в корзине
-- updatePrice() - обновляет общую стоимость заказа
+- set items(items: HTMLElement[]) - устанавливает список товаров
+- set selected(items: string[]) - устанавливает состояние кнопки
+- set total(total: number) - устанавливает стоимость заказа
 
 #### Класс OrderFirst
 Отображает форму с выбором способа оплаты, полем ввода адреса доставки.\
 Поля:
 - onlineButton: HTMLButtonElement - кнопка для онлайн оплаты
 - offlineButton: HTMLButtonElement - кнопка для оплаты при получении
-- submitButton: HTMLButtonElement - кнопка "Далее"
-- addressInput: HTMLInputElement
+- submitButton: HTMLButtonElement - кнопка подтверждения
+- addressInput: HTMLInputElement - поле формы для адреса
+- _errors: HTMLElement - для ошибок валидации
 
 Методы:
-- set payment - устанавливает способ оплаты
 - set address - устанавливает адрес дооставки
+- set valid(value: boolean) - валидность для активности кнопки
+- set errors(value: string) - для вывода ошибок
+- render(data: Partial<IOrderForm>): HTMLElement - рендер 
 
 #### Класс OrderSecond
 Отображает форму с полями ввода данных пользователя.\
 Поля: 
-- email: HTMLInputElement — поле для ввода email
-- phone: HTMLInputElement — поле для ввода номера телефона
-- payButton: HTMLButtonElement — кнопка "Оплатить".
+- _emailInput: HTMLInputElement — поле для ввода email
+- _phoneInput: HTMLInputElement — поле для ввода номера телефона
+- _submitButton: HTMLButtonElement — кнопка подтверждения
+- _errors: HTMLElement - для ошибок валидации полей
 
 Методы:
 - set email - устанавливает email пользователя
 - set phone - устанавливает номер телефона пользователя
+- set valid(value: boolean) - валидность для активности кнопки
+- set errors(value: string) - для вывода ошибок
+- render(data: Partial<IOrderForm>): HTMLElement - рендер
 
 #### Класс OrderSuccess
 Отображает попап с сообщением об успешном оформлении заказа.\
 Поля:
-- title: HTMLTitleElement - сообщение "Заказ оформлен"
-- descriptions: HTMLParagraphElement - стоимость заказа, который был оформлен (сколько списано)
-- button: HTMLButtonElement - кнопка "За новыми покупками"
+- _close: HTMLElement - кнопка для закрытия модального окна
+- _description: HTMLElement - стоимость заказа, который был оформлен (сколько списано)
 
 Методы:
 - set total - отображает сколько списано (стоимость заказа)
 
 ### Презентер (Presenter)
-Обрабатывает события от View, взаимодействует с Model, обновляет интерфейс методами View.
+Обрабатывает события от View, взаимодействует с Model, обновляет интерфейс методами View.\
+События:
+- catalog:changed - изменения в список товаров
+- card:open - открыть моальное окно карточки товара (превью)
+- basket:open - открыть модальное окно корзины товаров
+- cart:changed - изменения в корзине товаров
+- order:open - открыть модальное окно оформления заказа шаг 1
+- contacts:open - открыть модальное окно оформления заказа шаг 2
+- order:submit - для перехода к шагу 2 оформления заказа
+- contacts:submit - отправка на сервер форм
+- order:validation - для валидации форм
+- formErrors:change - для ошибок
 
 ## Описание компонентов, их функций и связей с другими компонентами
 

@@ -13,39 +13,23 @@ export class OrderFirst extends Component<IOrderForm> {
 	constructor(container: HTMLElement, protected events: IEvents) {
 		super(container);
 
-		console.log('OrderFirst container:', container);
-
-		try {
-			this._onlineButton = ensureElement<HTMLButtonElement>(
-				'button[name="card"]',
-				container
-			);
-			this._offlineButton = ensureElement<HTMLButtonElement>(
-				'button[name="cash"]',
-				container
-			);
-			this._addressInput = ensureElement<HTMLInputElement>(
-				'input[name="address"]',
-				container
-			);
-			this._submitButton = ensureElement<HTMLButtonElement>(
-				'button.order__button',
-				container
-			); // Явный селектор
-			this._errors = ensureElement<HTMLElement>('.form__errors', container);
-		} catch (error) {
-			console.error('Ошибка инициализации OrderFirst:', error);
-			throw error;
-		}
-
-		console.log('Elements initialized:', {
-			// Отладка
-			online: !!this._onlineButton,
-			offline: !!this._offlineButton,
-			address: !!this._addressInput,
-			submit: !!this._submitButton,
-			errors: !!this._errors,
-		});
+		this._onlineButton = ensureElement<HTMLButtonElement>(
+			'button[name="card"]',
+			container
+		);
+		this._offlineButton = ensureElement<HTMLButtonElement>(
+			'button[name="cash"]',
+			container
+		);
+		this._addressInput = ensureElement<HTMLInputElement>(
+			'input[name="address"]',
+			container
+		);
+		this._submitButton = ensureElement<HTMLButtonElement>(
+			'button.order__button',
+			container
+		);
+		this._errors = ensureElement<HTMLElement>('.form__errors', container);
 
 		this._onlineButton.addEventListener('click', () => {
 			this.toggleClass(this._onlineButton, 'button_alt-active', true);
@@ -76,17 +60,13 @@ export class OrderFirst extends Component<IOrderForm> {
 	}
 
 	set valid(value: boolean) {
-		console.log('OrderFirst.setValid():', value);
 		if (this._submitButton) {
-			console.log('Submit button exists:', !!this._submitButton); // Проверка кнопки
 			this.setDisabled(this._submitButton, !value);
 		}
 	}
 
 	set errors(value: string) {
-		console.log('OrderFirst.setErrors():', value);
 		if (this._errors) {
-			console.log('Errors element exists:', !!this._errors); // Проверка элемента
 			this._errors.textContent = value;
 			this._errors.style.display = value ? 'block' : 'none';
 		}

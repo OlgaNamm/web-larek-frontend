@@ -32,7 +32,7 @@ export class Basket extends Component<IBasketView> {
 		//если кнопка есть - обработчик клика
 		if (this._button) {
 			this._button.addEventListener('click', () => {
-				console.log('Клик по кнопке оформления');
+				//console.log('Клик по кнопке оформления');
 				this.events.emit('order:open');
 			});
 		}

@@ -2,6 +2,7 @@ import { Component } from '../base/Component';
 import { ICard } from '../../types';
 import { Card } from './Card';
 import { IEvents } from '../base/events';
+import { template } from '../..';
 
 interface IPage {
 	content: HTMLElement;
@@ -37,10 +38,9 @@ export class Page extends Component<IPage> {
     }
 
     renderCard(data: ICard): HTMLElement {
-        const template = document.querySelector<HTMLTemplateElement>('#card-catalog');
         const card = template.content.cloneNode(true) as HTMLElement;
         const cardComponent = new Card('card', card.querySelector('.card'), this.events);
-        
+
         cardComponent.id = data.id;
         cardComponent.title = data.title;
         cardComponent.price = data.price;

@@ -24,7 +24,6 @@ export class CartModel {
 	clear(): void {
 		this.items = [];
 		this.events.emit('cart:changed');
-		this.events.emit('cart:cleared');
 	}
 
 	getItems(): ICard[] {

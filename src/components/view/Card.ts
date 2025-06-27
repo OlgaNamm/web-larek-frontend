@@ -80,15 +80,6 @@ export class Card extends Component<ICard> {
 		this.setImage(this._image, fullPath, this._title.textContent);
 	}
 
-	/*set button(value: string) {
-		if (
-			this._button &&
-			!this._button.classList.contains('basket__item-delete')
-		) {
-			this.setText(this._button, value);
-		}
-	}*/
-
 	private getCategoryClass(category: categories): string {
 		switch (category) {
 			case 'софт-скил':
