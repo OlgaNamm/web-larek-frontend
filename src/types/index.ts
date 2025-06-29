@@ -15,19 +15,19 @@ export interface ICard {
 }
 
 export interface IOrderForm {
-    payment: string;
+	payment: string;
 	address: string;
 	email: string;
 	phone: string;
 	total?: number;
-    items?: string[];
+	items?: string[];
 }
 
 export interface IOrderResult {
-    id: string;
-    total: number;
+	id: string;
+	total: number;
 }
 
 export interface ICardRenderer {
-    renderCard(data: ICard): HTMLElement;
+	renderCard(data: ICard): HTMLElement;
 }

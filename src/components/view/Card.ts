@@ -9,7 +9,7 @@ export class Card extends Component<ICard> {
 	protected _price: HTMLElement;
 	protected _category: HTMLElement;
 	protected _image: HTMLImageElement;
-	protected _button: HTMLButtonElement | null;
+	public _button: HTMLButtonElement | null;
 
 	constructor(
 		protected blockName: string,
@@ -31,10 +31,15 @@ export class Card extends Component<ICard> {
 			: container.querySelector(`.${blockName}__button`);
 
 		if (events && !isBasketItem) {
-			this.container.addEventListener('click', (e) => {
+			this.container.addEventListener('click', () => {
 				events.emit('card:open', { id: this.container.dataset.id });
 			});
+		}
+	}
 
+	set buttonDisabled(state: boolean) {
+		if (this._button) {
+			this.setDisabled(this._button, state);
 		}
 	}
 
@@ -47,19 +52,19 @@ export class Card extends Component<ICard> {
 	}
 
 	set price(value: number | null) {
-    if (value === null) {
-        this.setText(this._price, 'Бесценно');
-        if (this._button) {
-            this._button.disabled = true; // Блокируем кнопку для бесценных товаров
-        }
-        return;
-    }
-    
-    this.setText(this._price, `${value} синапсов`);
-    if (this._button) {
-        this._button.disabled = false; // Разблокируем для товаров с ценой
-    }
-}
+		if (value === null) {
+			this.setText(this._price, 'Бесценно');
+			if (this._button) {
+				this._button.disabled = true; // Блокируем кнопку для бесценных товаров
+			}
+			return;
+		}
+
+		this.setText(this._price, `${value} синапсов`);
+		if (this._button) {
+			this._button.disabled = false; // Разблокируем для товаров с ценой
+		}
+	}
 
 	set category(value: categories) {
 		this.setText(this._category, value);
@@ -89,5 +94,4 @@ export class Card extends Component<ICard> {
 				return 'other';
 		}
 	}
-	
 }
