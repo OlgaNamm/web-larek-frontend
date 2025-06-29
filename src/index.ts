@@ -32,7 +32,7 @@ const orderTemplate = cloneTemplate<HTMLElement>('#order');
 const contactsTemplate = cloneTemplate<HTMLElement>('#contacts');
 const successTemplate = cloneTemplate<HTMLElement>('#success');
 
-export const template =
+const template =
 	document.querySelector<HTMLTemplateElement>('#card-catalog');
 
 const page = new Page(document.body, events);
@@ -49,35 +49,23 @@ const success = new Success(successTemplate, {
 //	console.log(eventName, data);
 //});
 
-// Функция рендера
-function createCardElement(cardData: ICard): HTMLElement {
-	const cardElement = cloneTemplate(template);
-	const card = new Card('card', cardElement, events);
-	card.id = cardData.id;
-	card.title = cardData.title;
-	card.price = cardData.price;
-	card.category = cardData.category;
-	card.image = cardData.image;
-	return card.render();
-}
 
 // Загрузка товаров
-api
-	.getProductList()
-	.then((items) => {
-		cardModel.cards = items;
-		// Рендерим карточки в презентере
-		const cardElements = items.map(createCardElement);
-		page.catalog = cardElements;
-	})
-	.catch((error) => {
-		console.error('Ошибка загрузки:', error);
-	});
+api.getProductList()
+    .then(items => {
+        cardModel.cards = items;
+        page.catalog = items.map(card => 
+            Card.createCard(template, card, events)  // Рендерим через статический метод
+        );
+    })
+    .catch(console.error);
 
 // Обновляет каталог (список карточек товаров)
 events.on('catalog:changed', () => {
-	const cardElements = cardModel.cards.map(createCardElement);
-	page.catalog = cardElements;
+	const cardElements = cardModel.cards.map(cardData => 
+        Card.createCard(template, cardData, events)  // Используем статический метод
+    );
+    page.catalog = cardElements;
 });
 
 // Карточка товара

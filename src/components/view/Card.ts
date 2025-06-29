@@ -1,7 +1,8 @@
 import { Component } from '../base/Component';
-import { ICard, categories, ICardRenderer } from '../../types';
+import { ICard, categories } from '../../types';
 import { CDN_URL } from '../../utils/constants';
 import { IEvents } from '../base/events';
+import { cloneTemplate } from '../../utils/utils';
 
 export class Card extends Component<ICard> {
 	protected _id: HTMLElement;
@@ -94,4 +95,19 @@ export class Card extends Component<ICard> {
 				return 'other';
 		}
 	}
+
+	static createCard(
+        template: HTMLTemplateElement,
+        data: ICard,
+        events?: IEvents
+    ): HTMLElement {
+        const cardElement = cloneTemplate(template);
+        const card = new Card('card', cardElement, events);
+        card.id = data.id;
+        card.title = data.title;
+        card.price = data.price;
+        card.category = data.category;
+        card.image = data.image;
+        return card.render();
+    }
 }
