@@ -69,39 +69,31 @@ export class FormModel {
 
 		if (this._currentStep === 'order') {
 			// Проверяем валидность полей
-			const paymentValid = !!this._payment;
+			const paymentSelected = !!this._payment;
 			const addressValid = !!this._address?.trim();
 
 			// Устанавливаем общую валидность
-			isValid = paymentValid && addressValid;
+			isValid = paymentSelected && addressValid;
 
-			// Показываем ошибки только после взаимодействия
-			if (!paymentValid && this._hasPaymentInteraction) {
-				errors.payment = 'Не выбран способ оплаты';
-			}
-
-			if (!addressValid && this._hasAddressInteraction) {
-				errors.address = 'Укажите адрес доставки';
-			}
+			// Показываем ошибки только после взаимодействия (выбран способ оплаты)
+			if (paymentSelected && !addressValid) {
+            errors.address = 'Введите адрес доставки';
+        }
 		} else {
 			// Для второго шага
-			const emailValid = this._email
-				? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this._email)
-				: false;
-			const phoneValid = this._phone
-				? /^\+?[\d\s\-\(\)]{7,}$/.test(this._phone)
-				: false;
+			const emailValid = !!this._email;
+        const phoneValid = !!this._phone;
 
 			// Кнопка должна быть неактивна при первом открытии
 			isValid = emailValid && phoneValid;
 
 			// Показываем ошибки только если поле было изменено
-			if (this._email && !emailValid) {
-				errors.email = 'Укажите корректный email';
+			if (!emailValid) {
+				errors.email = 'Введите email';
 			}
 
-			if (this._phone && !phoneValid) {
-				errors.phone = 'Укажите корректный номер телефона';
+			if (!phoneValid) {
+				errors.phone = 'Введите номер телефона';
 			}
 		}
 
@@ -109,7 +101,7 @@ export class FormModel {
 
 		this.events.emit('order:validation', {
 			valid: isValid,
-			errors: Object.values(errors).filter(Boolean).join(', '),
+			errors: Object.values(errors).filter(Boolean).join('. '),
 		});
 
 		return isValid;

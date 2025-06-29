@@ -31,7 +31,6 @@ const config = {
     new MiniCssExtractPlugin(),
     new DefinePlugin({
       'process.env.API_ORIGIN': JSON.stringify(process.env.API_ORIGIN),
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
     }),
   ],
   module: {
