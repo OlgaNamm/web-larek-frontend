@@ -36,17 +36,4 @@ export class Page extends Component<IPage> {
     set catalog(items: HTMLElement[]) {
         this._catalog.replaceChildren(...items);
     }
-
-    renderCard(data: ICard): HTMLElement {
-        const card = template.content.cloneNode(true) as HTMLElement;
-        const cardComponent = new Card('card', card.querySelector('.card'), this.events);
-
-        cardComponent.id = data.id;
-        cardComponent.title = data.title;
-        cardComponent.price = data.price;
-        cardComponent.category = data.category;
-        cardComponent.image = data.image;
-
-        return card;
-    }
 }

@@ -33,7 +33,6 @@ const successTemplate = cloneTemplate<HTMLElement>('#success');
 
 export  const template = document.querySelector<HTMLTemplateElement>('#card-catalog');
 
-
 const page = new Page(document.body, events);
 const modal = new Modal(modalTemplate, events);
 const basket = new Basket(basketTemplate, events);
@@ -50,23 +49,43 @@ const success = new Success(successTemplate, {
 
 
 // Загрузка товаров
+// Функция рендера каталога
+function renderCatalog() {
+    const cards = cardModel.cards.map((card) => {
+        const cardElement = cloneTemplate(template);
+        const cardComponent = new Card('card', cardElement, events);
+        
+        cardComponent.id = card.id;
+        cardComponent.title = card.title;
+        cardComponent.price = card.price;
+        cardComponent.category = card.category;
+        cardComponent.image = card.image;
+        
+        return cardComponent.render();
+    });
+    
+    page.catalog = cards;
+}
+
 api
-	.get<{ items: ICard[] }>('/product')
-	.then((response) => {
-		// Преобразую из SVG в PNG
-		const modifiedItems = response.items.map((item) => ({
-			...item,
-			image: item.image.replace('.svg', '.png'),
-		}));
-		cardModel.cards = modifiedItems;
-	})
-	.catch((error) => {
-		console.error('Ошибка загрузки:', error);
-	});
+    .get<{ items: ICard[] }>('/product')
+    .then((response) => {
+        const modifiedItems = response.items.map((item) => ({
+            ...item,
+            image: item.image.replace('.svg', '.png'),
+        }));
+        cardModel.cards = modifiedItems;
+        
+        // Рендерим карточки сразу после загрузки
+        renderCatalog();
+    })
+    .catch((error) => {
+        console.error('Ошибка загрузки:', error);
+    });
 
 // Обновляет каталог (список карточек товаров)
 events.on('catalog:changed', () => {
-	page.catalog = cardModel.cards.map((card) => page.renderCard(card));
+	renderCatalog();
 });
 
 // Карточка товара
