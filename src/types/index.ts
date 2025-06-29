@@ -14,8 +14,6 @@ export interface ICard {
 	image: string;
 }
 
-
-
 export interface IOrderForm {
     payment: string;
 	address: string;
@@ -23,4 +21,9 @@ export interface IOrderForm {
 	phone: string;
 	total?: number;
     items?: string[];
+}
+
+export interface IOrderResult {
+    id: string;
+    total: number;
 }

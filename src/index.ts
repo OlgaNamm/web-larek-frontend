@@ -15,10 +15,11 @@ import { FormModel } from './components/model/FormModel';
 import { OrderFirst } from './components/view/OrderFirst';
 import { OrderSecond } from './components/view/OrderSecond';
 import { Success } from './components/view/OrderSuccess';
+import { WebLarekApi } from './components/base/WebLarekApi';
 
 //console.log('API_URL:', API_URL); // Проверка URL
 
-const api = new Api(API_URL);
+const api = new WebLarekApi(API_URL, CDN_URL);
 const events = new EventEmitter();
 
 const cardModel = new CardModel(events);
@@ -67,16 +68,9 @@ function renderCatalog() {
     page.catalog = cards;
 }
 
-api
-    .get<{ items: ICard[] }>('/product')
-    .then((response) => {
-        const modifiedItems = response.items.map((item) => ({
-            ...item,
-            image: item.image.replace('.svg', '.png'),
-        }));
-        cardModel.cards = modifiedItems;
-        
-        // Рендерим карточки сразу после загрузки
+api.getProductList()
+    .then((items) => {
+        cardModel.cards = items;
         renderCatalog();
     })
     .catch((error) => {
@@ -211,20 +205,19 @@ events.on('order:submit', () => {
 
 // Обработчик отправки формы
 events.on('contacts:submit', () => {
-	 api
-        .post('/order', {
-            ...formModel.getFormData(),
-            total: cartModel.getTotal(),
-            items: cartModel.getItems().map((item) => item.id),
-        })
-        .then(() => {
-            success.total = cartModel.getTotal();
-            modal.render({ content: success.render({}) });
-            cartModel.clear();
-        })
-        .catch((err) => {
-            console.error('Ошибка оформления заказа:', err);
-        });
+    api.createOrder({
+        ...formModel.getFormData(),
+        total: cartModel.getTotal(),
+        items: cartModel.getItems().map((item) => item.id),
+    })
+    .then((result) => {
+        success.total = result.total;
+        modal.render({ content: success.render({}) });
+        cartModel.clear();
+    })
+    .catch((err) => {
+        console.error('Ошибка оформления заказа:', err);
+    });
 });
 
 // Обработчики изменений полей
