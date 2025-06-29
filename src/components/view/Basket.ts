@@ -17,17 +17,8 @@ export class Basket extends Component<IBasketView> {
 		super(container);
 
 		this._list = ensureElement<HTMLElement>('.basket__list', this.container);
-		this._total = this.container.querySelector('.basket__price');
-		this._button = this.container.querySelector('.basket__button');
-
-		this._list.addEventListener('click', (e) => {
-			const deleteButton = (e.target as HTMLElement).closest(
-				'.basket__item-delete'
-			);
-			if (deleteButton) {
-				e.stopPropagation();
-			}
-		});
+		this._total = ensureElement<HTMLElement>('.basket__price', this.container);
+        this._button = ensureElement<HTMLButtonElement>('.basket__button', this.container);
 
 		//если кнопка есть - обработчик клика
 		if (this._button) {
@@ -37,8 +28,7 @@ export class Basket extends Component<IBasketView> {
 			});
 		}
 
-		// Инициализируем массив товаров пустым массивом
-		this.items = [];
+
 	}
 	// устанавливаем список товаров
 	set items(items: HTMLElement[]) {
@@ -46,11 +36,7 @@ export class Basket extends Component<IBasketView> {
 	}
 	// установка состояния кнопки
 	set selected(items: string[]) {
-		if (items.length) {
-			this.setDisabled(this._button, false);
-		} else {
-			this.setDisabled(this._button, true);
-		}
+		this.setDisabled(this._button, items.length === 0);
 	}
 	// установка стоимости заказа
 	set total(total: number) {
