@@ -43,6 +43,9 @@ const success = new Success(successTemplate, {
 	onClick: () => modal.close(),
 });
 
+
+
+
 //подписка на все события для отладки
 //events.onAll(({ eventName, data }) => {
 //	console.log(eventName, data);
@@ -50,36 +53,33 @@ const success = new Success(successTemplate, {
 
 
 // Загрузка товаров
-// Функция рендера каталога
-function renderCatalog() {
-    const cards = cardModel.cards.map((card) => {
-        const cardElement = cloneTemplate(template);
-        const cardComponent = new Card('card', cardElement, events);
-        
-        cardComponent.id = card.id;
-        cardComponent.title = card.title;
-        cardComponent.price = card.price;
-        cardComponent.category = card.category;
-        cardComponent.image = card.image;
-        
-        return cardComponent.render();
-    });
-    
-    page.catalog = cards;
+// Функция рендера
+function createCardElement(cardData: ICard): HTMLElement {
+    const cardElement = cloneTemplate(template);
+    const card = new Card('card', cardElement, events);
+    card.id = cardData.id;
+    card.title = cardData.title;
+    card.price = cardData.price;
+    card.category = cardData.category;
+    card.image = cardData.image;
+    return card.render();
 }
 
 api.getProductList()
-    .then((items) => {
+    .then(items => {
         cardModel.cards = items;
-        renderCatalog();
+        // Рендерим карточки в презентере
+        const cardElements = items.map(createCardElement);
+        page.catalog = cardElements;
     })
-    .catch((error) => {
+    .catch(error => {
         console.error('Ошибка загрузки:', error);
     });
 
 // Обновляет каталог (список карточек товаров)
 events.on('catalog:changed', () => {
-	renderCatalog();
+    const cardElements = cardModel.cards.map(createCardElement);
+    page.catalog = cardElements;
 });
 
 // Карточка товара
@@ -87,13 +87,13 @@ events.on('card:open', (data: { id: string }) => {
 	const item = cardModel.getCardById(data.id);
 	if (!item) return;
 	const preview = new Card('card', cloneTemplate('#card-preview'), events);
-	preview.id = item.id;
-	preview.title = item.title;
-	preview.price = item.price;
-	preview.category = item.category;
-	preview.image = item.image;
-
-	const cardElement = preview.render();
+    const cardElement = preview.render({
+        id: item.id,
+        title: item.title,
+        price: item.price,
+        category: item.category,
+        image: item.image
+    });
 	
 	 const button = cardElement.querySelector<HTMLButtonElement>('.card__button');
     if (button) {

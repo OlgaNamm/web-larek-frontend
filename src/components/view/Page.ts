@@ -1,8 +1,6 @@
 import { Component } from '../base/Component';
-import { ICard } from '../../types';
-import { Card } from './Card';
+import { ICard, ICardRenderer } from '../../types';
 import { IEvents } from '../base/events';
-import { template } from '../..';
 
 interface IPage {
 	content: HTMLElement;
@@ -13,6 +11,7 @@ export class Page extends Component<IPage> {
     protected _catalog: HTMLElement;
     protected _wrapper: HTMLElement;
     protected _basket: HTMLElement;
+    protected _cardRenderer: ICardRenderer;
 
     constructor(container: HTMLElement, protected events?: IEvents) {
         super(container);
@@ -33,7 +32,11 @@ export class Page extends Component<IPage> {
         this.setText(this._counter, String(value));
     }
 
-    set catalog(items: HTMLElement[]) {
+     set catalog(items: HTMLElement[]) {
         this._catalog.replaceChildren(...items);
+    }
+
+    set cardRenderer(renderer: ICardRenderer) {
+        this._cardRenderer = renderer;
     }
 }

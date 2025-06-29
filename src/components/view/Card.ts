@@ -1,5 +1,5 @@
 import { Component } from '../base/Component';
-import { ICard, categories } from '../../types';
+import { ICard, categories, ICardRenderer } from '../../types';
 import { CDN_URL } from '../../utils/constants';
 import { IEvents } from '../base/events';
 
@@ -89,4 +89,5 @@ export class Card extends Component<ICard> {
 				return 'other';
 		}
 	}
+	
 }

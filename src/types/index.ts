@@ -27,3 +27,7 @@ export interface IOrderResult {
     id: string;
     total: number;
 }
+
+export interface ICardRenderer {
+    renderCard(data: ICard): HTMLElement;
+}
