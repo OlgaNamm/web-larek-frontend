@@ -211,22 +211,20 @@ events.on('order:submit', () => {
 
 // Обработчик отправки формы
 events.on('contacts:submit', () => {
-	if (formModel.valid) {
-		api
-			.post('/order', {
-				...formModel.getFormData(),
-				total: cartModel.getTotal(),
-				items: cartModel.getItems().map((item) => item.id),
-			})
-			.then(() => {
-				success.total = cartModel.getTotal();
-				modal.render({ content: success.render({}) });
-				cartModel.clear();
-			})
-			.catch((err) => {
-				console.error('Ошибка оформления заказа:', err);
-			});
-	}
+	 api
+        .post('/order', {
+            ...formModel.getFormData(),
+            total: cartModel.getTotal(),
+            items: cartModel.getItems().map((item) => item.id),
+        })
+        .then(() => {
+            success.total = cartModel.getTotal();
+            modal.render({ content: success.render({}) });
+            cartModel.clear();
+        })
+        .catch((err) => {
+            console.error('Ошибка оформления заказа:', err);
+        });
 });
 
 // Обработчики изменений полей

@@ -200,7 +200,6 @@ interface IOrderForm {
 Методы:
 - set counter(value: number) - устанавливает значение счетчика
 - set catalog(items: HTMLElement[]) - устанавливает карточки товаров на странице
-- renderCard(data: ICard): HTMLElement - рендерит карточки
 
 #### Класс Card
 Отображает карточку с информацией о товаре.

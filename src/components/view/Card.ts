@@ -35,11 +35,6 @@ export class Card extends Component<ICard> {
 				events.emit('card:open', { id: this.container.dataset.id });
 			});
 
-			if (this._button) {
-				this._button.addEventListener('click', () => {
-					events.emit('card:select', { id: this.container.dataset.id });
-				});
-			}
 		}
 	}
 
